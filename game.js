@@ -2,7 +2,7 @@
 class Piece {
     constructor(type) {
         this.type = type;
-        this.shape = SHAPES[type];
+        this.shape = JSON.parse(JSON.stringify(SHAPES[type])); // ディープコピー
         this.color = COLORS[type];
         this.x = Math.floor(BOARD_CONFIG.COLS / 2) - Math.floor(this.shape[0].length / 2);
         this.y = 0;
@@ -33,6 +33,7 @@ class Piece {
 // ゲームクラス
 class Game {
     constructor() {
+        console.log('Game constructor開始');
         this.board = new Board();
         this.currentPiece = null;
         this.nextPiece = null;
@@ -46,7 +47,9 @@ class Game {
         this.nextCanvas = document.getElementById('next');
         this.nextCtx = this.nextCanvas.getContext('2d');
         
+        console.log('Game初期化中...');
         this.init();
+        console.log('Game初期化完了');
     }
 
     // ゲーム初期化
@@ -54,6 +57,7 @@ class Game {
         this.nextPiece = this.createRandomPiece();
         this.spawnNewPiece();
         this.drawNextPiece();
+        this.updateDisplay();
     }
 
     // ランダムなピースを生成
@@ -156,18 +160,24 @@ class Game {
 
     // ゲーム開始
     start() {
+        console.log('ゲーム開始が呼ばれました');
         this.isPlaying = true;
         this.isPaused = false;
         this.lastDropTime = performance.now();
+        console.log('isPlaying:', this.isPlaying);
+        console.log('lastDropTime:', this.lastDropTime);
+        this.draw(); // 即座に描画
     }
 
     // ゲーム一時停止
     pause() {
         this.isPaused = !this.isPaused;
+        console.log('ポーズ:', this.isPaused);
     }
 
     // ゲームリセット
     reset() {
+        console.log('ゲームリセット');
         this.board.clear();
         this.score = 0;
         this.lines = 0;
