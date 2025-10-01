@@ -1,6 +1,7 @@
 // キーボード操作を管理するクラス
 class Controls {
     constructor(game) {
+        console.log('Controls constructor開始');
         this.game = game;
         this.keys = {};
         this.keyTimers = {};
@@ -8,6 +9,7 @@ class Controls {
         this.ARR = 0; // Auto Repeat Rate: 0ms（瞬時に移動）
         this.setupKeyboardControls();
         this.setupButtonControls();
+        console.log('Controls初期化完了');
     }
 
     // キーボード操作の設定
@@ -16,10 +18,12 @@ class Controls {
             // スペースキーでゲーム開始/リスタート
             if (e.code === 'Space') {
                 e.preventDefault();
+                console.log('スペースキー押下');
                 if (!this.game.isPlaying) {
                     this.game.reset();
                     this.game.start();
-                    document.getElementById('startBtn').textContent = 'リスタート';
+                    const startBtn = document.getElementById('startBtn');
+                    if (startBtn) startBtn.textContent = 'リスタート';
                 } else {
                     this.game.reset();
                     this.game.start();
@@ -101,29 +105,49 @@ class Controls {
 
     // ボタン操作の設定
     setupButtonControls() {
+        console.log('ボタンコントロール設定開始');
         const startBtn = document.getElementById('startBtn');
         const pauseBtn = document.getElementById('pauseBtn');
 
+        console.log('startBtn:', startBtn);
+        console.log('pauseBtn:', pauseBtn);
+
         if (startBtn) {
-            startBtn.addEventListener('click', () => {
-                if (!this.game.isPlaying) {
-                    this.game.reset();
-                    this.game.start();
-                    startBtn.textContent = 'リスタート';
-                } else {
-                    this.game.reset();
-                    this.game.start();
-                }
+            // 既存のイベントリスナーを削除（重複防止）
+            const newStartBtn = startBtn.cloneNode(true);
+            startBtn.parentNode.replaceChild(newStartBtn, startBtn);
+            
+            newStartBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('★★★ スタートボタンがクリックされました ★★★');
+                console.log('現在のisPlaying:', this.game.isPlaying);
+                
+                this.game.reset();
+                this.game.start();
+                newStartBtn.textContent = 'リスタート';
+                
+                console.log('ゲーム開始後のisPlaying:', this.game.isPlaying);
             });
+            console.log('スタートボタンイベント登録完了');
+        } else {
+            console.error('★★★ エラー：スタートボタンが見つかりません ★★★');
         }
 
         if (pauseBtn) {
-            pauseBtn.addEventListener('click', () => {
+            const newPauseBtn = pauseBtn.cloneNode(true);
+            pauseBtn.parentNode.replaceChild(newPauseBtn, pauseBtn);
+            
+            newPauseBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('★★★ ポーズボタンがクリックされました ★★★');
                 if (this.game.isPlaying) {
                     this.game.pause();
-                    pauseBtn.textContent = this.game.isPaused ? '再開' : 'ポーズ';
+                    newPauseBtn.textContent = this.game.isPaused ? '再開' : 'ポーズ';
                 }
             });
+            console.log('ポーズボタンイベント登録完了');
+        } else {
+            console.error('★★★ エラー：ポーズボタンが見つかりません ★★★');
         }
     }
 
@@ -170,8 +194,8 @@ class Controls {
 
     // 右回転（時計回り）
     rotateRight() {
+        const originalShape = JSON.parse(JSON.stringify(this.game.currentPiece.shape));
         const rotatedShape = this.game.currentPiece.rotate();
-        const originalShape = this.game.currentPiece.shape;
         
         // 回転後の形状を一時的に設定
         this.game.currentPiece.shape = rotatedShape;
@@ -198,11 +222,17 @@ class Controls {
 
     // 左回転（反時計回り）
     rotateLeft() {
+        const originalShape = JSON.parse(JSON.stringify(this.game.currentPiece.shape));
+        
         // 3回右回転 = 左回転
+        let newShape = this.game.currentPiece.shape;
         for (let i = 0; i < 3; i++) {
-            const rotatedShape = this.game.currentPiece.rotate();
-            this.game.currentPiece.shape = rotatedShape;
+            newShape = newShape[0].map((_, idx) =>
+                newShape.map(row => row[idx]).reverse()
+            );
         }
+        
+        this.game.currentPiece.shape = newShape;
         
         // 壁蹴りチェック
         const kicks = [0, 1, -1, 2, -2];
@@ -216,10 +246,9 @@ class Controls {
             }
         }
         
-        // 回転できない場合は元に戻す（右回転1回）
+        // 回転できない場合は元に戻す
         if (!kicked) {
-            const rotatedShape = this.game.currentPiece.rotate();
-            this.game.currentPiece.shape = rotatedShape;
+            this.game.currentPiece.shape = originalShape;
         }
         
         this.game.draw();
@@ -227,11 +256,17 @@ class Controls {
 
     // 180度回転
     rotate180() {
+        const originalShape = JSON.parse(JSON.stringify(this.game.currentPiece.shape));
+        
         // 2回右回転 = 180度回転
+        let newShape = this.game.currentPiece.shape;
         for (let i = 0; i < 2; i++) {
-            const rotatedShape = this.game.currentPiece.rotate();
-            this.game.currentPiece.shape = rotatedShape;
+            newShape = newShape[0].map((_, idx) =>
+                newShape.map(row => row[idx]).reverse()
+            );
         }
+        
+        this.game.currentPiece.shape = newShape;
         
         // 壁蹴りチェック
         const kicks = [0, 1, -1, 2, -2];
@@ -245,12 +280,9 @@ class Controls {
             }
         }
         
-        // 回転できない場合は元に戻す（180度回転）
+        // 回転できない場合は元に戻す
         if (!kicked) {
-            for (let i = 0; i < 2; i++) {
-                const rotatedShape = this.game.currentPiece.rotate();
-                this.game.currentPiece.shape = rotatedShape;
-            }
+            this.game.currentPiece.shape = originalShape;
         }
         
         this.game.draw();
