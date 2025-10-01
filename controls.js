@@ -104,23 +104,27 @@ class Controls {
         const startBtn = document.getElementById('startBtn');
         const pauseBtn = document.getElementById('pauseBtn');
 
-        startBtn.addEventListener('click', () => {
-            if (!this.game.isPlaying) {
-                this.game.reset();
-                this.game.start();
-                startBtn.textContent = 'リスタート';
-            } else {
-                this.game.reset();
-                this.game.start();
-            }
-        });
+        if (startBtn) {
+            startBtn.addEventListener('click', () => {
+                if (!this.game.isPlaying) {
+                    this.game.reset();
+                    this.game.start();
+                    startBtn.textContent = 'リスタート';
+                } else {
+                    this.game.reset();
+                    this.game.start();
+                }
+            });
+        }
 
-        pauseBtn.addEventListener('click', () => {
-            if (this.game.isPlaying) {
-                this.game.pause();
-                pauseBtn.textContent = this.game.isPaused ? '再開' : 'ポーズ';
-            }
-        });
+        if (pauseBtn) {
+            pauseBtn.addEventListener('click', () => {
+                if (this.game.isPlaying) {
+                    this.game.pause();
+                    pauseBtn.textContent = this.game.isPaused ? '再開' : 'ポーズ';
+                }
+            });
+        }
     }
 
     // 左に移動
